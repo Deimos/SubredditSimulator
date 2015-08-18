@@ -1,0 +1,6 @@
+[database]
+system = postgresql
+host = localhost
+database = database_name
+username = database_username
+password = database_password
