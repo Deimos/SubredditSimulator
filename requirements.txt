@@ -1,4 +1,4 @@
 SQLAlchemy>=1.0.8
-markovify>=0.1.0
+markovify>=0.2.0
 praw>=2.1.21
 pytz>=2015.4

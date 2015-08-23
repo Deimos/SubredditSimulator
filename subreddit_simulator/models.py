@@ -16,11 +16,11 @@ from sqlalchemy import (
 
 from database import Base, JSONSerialized, db
 
+MAX_OVERLAP_RATIO = 0.5
+MAX_OVERLAP_TOTAL = 10
 
 class SubredditSimulatorText(markovify.Text):
     html_parser = HTMLParser.HTMLParser()
-    max_overlap_ratio = 0.5
-    max_overlap_cap = 10
 
     def test_sentence_input(self, sentence):
         return True
@@ -257,7 +257,9 @@ class Account(Base):
                     self.selftext_model = None
 
     def make_comment_sentence(self):
-        return self.comment_model.make_sentence(tries=10000)
+        return self.comment_model.make_sentence(tries=10000,
+            max_overlap_total=MAX_OVERLAP_TOTAL,
+            max_overlap_ratio=MAX_OVERLAP_RATIO)
 
     def build_comment(self):
         comment = ""
@@ -285,7 +287,9 @@ class Account(Base):
 
     def make_selftext_sentence(self):
         if self.selftext_model:
-            return self.selftext_model.make_sentence(tries=10000)
+            return self.selftext_model.make_sentence(tries=10000,
+                max_overlap_total=MAX_OVERLAP_TOTAL,
+                max_overlap_ratio=MAX_OVERLAP_RATIO)
         else:
             return None
 
@@ -319,7 +323,9 @@ class Account(Base):
     def post_submission(self, subreddit, type=None):
         subreddit = self.session.get_subreddit(subreddit)
 
-        title = self.title_model.make_short_sentence(300, tries=10000)
+        title = self.title_model.make_short_sentence(300, tries=10000,
+                max_overlap_total=MAX_OVERLAP_TOTAL,
+                max_overlap_ratio=MAX_OVERLAP_RATIO)
         title = title.rstrip(".")
 
         if not type:
