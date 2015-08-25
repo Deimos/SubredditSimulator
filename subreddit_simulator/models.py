@@ -13,6 +13,7 @@ from sqlalchemy import (
     String,
     Text,
 )
+from sqlalchemy.sql.expression import func
 
 from database import Base, JSONSerialized, db
 
@@ -189,13 +190,14 @@ class Account(Base):
         return True
 
     def get_comments_for_training(self, limit=None):
-        comments = db.query(Comment).filter_by(subreddit=self.subreddit)
+        comments = (db.query(Comment)
+            .filter_by(subreddit=self.subreddit)
+            .order_by(func.random())
+            .limit(Settings["max corpus size"])
+        )
         valid_comments = [comment for comment in comments
             if self.should_include_comment(comment)]
-        if len(valid_comments) > Settings["max corpus size"]:
-            return random.sample(valid_comments, Settings["max corpus size"])
-        else:
-            return valid_comments
+        return valid_comments
 
     def get_submissions_for_training(self, limit=None):
         submissions = db.query(Submission).filter_by(subreddit=self.subreddit)
