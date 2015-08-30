@@ -9,6 +9,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Index,
     Integer,
     String,
     Text,
@@ -62,13 +63,13 @@ class Account(Base):
     subreddit = Column(String(21))
     special_class = Column(String(50))
     added = Column(DateTime(timezone=True))
-    can_submit = Column(Boolean)
+    can_submit = Column(Boolean, default=False)
     link_karma = Column(Integer)
-    num_submissions = Column(Integer)
+    num_submissions = Column(Integer, default=0)
     last_submitted = Column(DateTime(timezone=True))
-    can_comment = Column(Boolean)
+    can_comment = Column(Boolean, default=True)
     comment_karma = Column(Integer)
-    num_comments = Column(Integer)
+    num_comments = Column(Integer, default=0)
     last_commented = Column(DateTime(timezone=True))
 
     __mapper_args__ = {
@@ -76,9 +77,10 @@ class Account(Base):
         "polymorphic_identity": None,
     }
 
-    def __init__(name, subreddit, can_submit=False):
+    def __init__(self, name, subreddit, can_comment=True, can_submit=False):
         self.name = name
-        self.subreddit = subreddit
+        self.subreddit = subreddit.lower()
+        self.can_comment = can_comment
         self.can_submit = can_submit
         self.added = datetime.now(pytz.utc)
 
@@ -384,12 +386,16 @@ class Comment(Base):
     __tablename__ = "comments"
 
     id = Column(String(10), primary_key=True)
-    subreddit = Column(String(21), index=True)
-    date = Column(DateTime, index=True)
+    subreddit = Column(String(21))
+    date = Column(DateTime)
     is_top_level = Column(Boolean)
     author = Column(String(20))
     body = Column(Text)
     score = Column(Integer)
+
+    __table_args__ = (
+        Index("ix_comment_subreddit_date", "subreddit", "date"),
+    )
 
     def __init__(self, comment):
         self.id = comment.id
@@ -408,14 +414,18 @@ class Submission(Base):
     __tablename__ = "submissions"
 
     id = Column(String(10), primary_key=True)
-    subreddit = Column(String(21), index=True)
-    date = Column(DateTime, index=True)
+    subreddit = Column(String(21))
+    date = Column(DateTime)
     author = Column(String(20))
     title = Column(Text)
     url = Column(Text)
     body = Column(Text)
     score = Column(Integer)
     over_18 = Column(Boolean)
+
+    __table_args__ = (
+        Index("ix_submission_subreddit_date", "subreddit", "date"),
+    )
 
     def __init__(self, submission):
         self.id = submission.id
