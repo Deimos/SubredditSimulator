@@ -131,9 +131,10 @@ class Account(Base):
         for comment in subreddit.get_comments(limit=limit):
             comment = Comment(comment)
 
-            if (comment.id == last_comment.id or 
-                    comment.date <= last_comment.date):
-                break
+            if last_comment:
+                if (comment.id == last_comment.id or 
+                        comment.date <= last_comment.date):
+                    break
 
             # somehow there are occasionally duplicates - skip over them
             if comment.id in seen_ids:
@@ -165,9 +166,10 @@ class Account(Base):
         for submission in subreddit.get_new(limit=limit):
             submission = Submission(submission)
 
-            if (submission.id == last_submission.id or 
-                    submission.date <= last_submission.date):
-                break
+            if last_submission:
+                if (submission.id == last_submission.id or 
+                        submission.date <= last_submission.date):
+                    break
 
             # somehow there are occasionally duplicates - skip over them
             if submission.id in seen_ids:
